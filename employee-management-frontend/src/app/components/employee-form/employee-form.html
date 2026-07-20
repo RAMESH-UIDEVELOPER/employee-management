@@ -1,0 +1,137 @@
+﻿<div class="container">
+  <div class="header">
+    <h1>{{ isEditMode ? 'Edit Employee' : 'Add Employee' }}</h1>
+  </div>
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" class="employee-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="employeeName">Employee Name</label>
+        <input
+          type="text"
+          id="employeeName"
+          formControlName="employeeName"
+          placeholder="Enter employee name"
+        />
+        @if (employeeForm.get('employeeName')?.invalid && employeeForm.get('employeeName')?.touched) {
+          <div class="error-text">
+            Employee name is required (min 2 characters)
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="contactNo">Contact Number</label>
+        <input
+          type="text"
+          id="contactNo"
+          formControlName="contactNo"
+          placeholder="Enter 10-digit contact number"
+        />
+        @if (employeeForm.get('contactNo')?.invalid && employeeForm.get('contactNo')?.touched) {
+          <div class="error-text">
+            Valid 10-digit contact number is required
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="emailId">Email</label>
+      <input
+        type="email"
+        id="emailId"
+        formControlName="emailId"
+        placeholder="Enter email address"
+      />
+      @if (employeeForm.get('emailId')?.invalid && employeeForm.get('emailId')?.touched) {
+        <div class="error-text">
+          Valid email is required
+        </div>
+      }
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="deptId">Department ID</label>
+        <input
+          type="number"
+          id="deptId"
+          formControlName="deptId"
+          placeholder="Enter department ID"
+        />
+        @if (employeeForm.get('deptId')?.invalid && employeeForm.get('deptId')?.touched) {
+          <div class="error-text">
+            Department ID is required
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="gender">Gender</label>
+        <select id="gender" formControlName="gender">
+          <option value="">Select Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+        @if (employeeForm.get('gender')?.invalid && employeeForm.get('gender')?.touched) {
+          <div class="error-text">
+            Gender is required
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="role">Role</label>
+        <input
+          type="text"
+          id="role"
+          formControlName="role"
+          placeholder="Enter role"
+        />
+        @if (employeeForm.get('role')?.invalid && employeeForm.get('role')?.touched) {
+          <div class="error-text">
+            Role is required
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="text"
+          id="password"
+          formControlName="password"
+          placeholder="Enter password"
+        />
+        @if (employeeForm.get('password')?.invalid && employeeForm.get('password')?.touched) {
+          <div class="error-text">
+            Password is required
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="isActive">Status</label>
+      <select id="isActive" formControlName="isActive">
+        <option [value]="true">Active</option>
+        <option [value]="false">Inactive</option>
+      </select>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" [disabled]="employeeForm.invalid || loading" class="btn btn-primary">
+        {{ isEditMode ? 'Update' : 'Create' }} Employee
+      </button>
+      <a routerLink="/employees" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>

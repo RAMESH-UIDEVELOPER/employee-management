@@ -1,0 +1,41 @@
+<div class="app-layout">
+  <aside class="sidebar" [class.collapsed]="isSidebarCollapsed">
+    <div class="sidebar-logo">
+      <i class="fas fa-building"></i>
+      <span class="logo-text">EMS</span>
+    </div>
+    
+    <button class="sidebar-toggle" (click)="toggleSidebar()">
+      <i [class]="isSidebarCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'"></i>
+    </button>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" (click)="toggleSidebar()" class="nav-item" [class.active]="isActive('/dashboard')" [class.dashboard-active]="isActive('/dashboard')">
+        <i class="fas fa-home"></i>
+        <span class="nav-text">Dashboard</span>
+      </a>
+      <a routerLink="/employees" (click)="toggleSidebar()" class="nav-item" [class.active]="isActive('/employees')" [class.employees-active]="isActive('/employees')">
+        <i class="fas fa-users"></i>
+        <span class="nav-text">Employees</span>
+      </a>
+    </nav>
+  </aside>
+
+  <div class="main-content" [class.expanded]="isSidebarCollapsed">
+    <header class="top-header">
+      <div class="header-left">
+        <h2>{{ pageTitle }}</h2>
+      </div>
+      <div class="header-right">
+        <span class="username">{{ username }}</span>
+        <button class="logout-btn" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,129 @@
+﻿<div class="container">
+  <div class="header">
+    <h1>Employee Management</h1>
+    <div class="header-actions">
+      <a routerLink="/employees/add" class="btn btn-primary">Add Employee</a>
+      <div class="settings-dropdown">
+        <button class="settings-btn-icon" (click)="toggleSettings()">
+          <i class="fas fa-cog"></i>
+        </button>
+        @if (showSettings) {
+          <div class="dropdown-menu">
+            @for (col of availableColumns; track col.key) {
+              <label class="dropdown-item">
+                <input type="checkbox" [checked]="selectedColumns.has(col.key)" (change)="toggleColumn(col.key, $event)" />
+                {{ col.label }}
+              </label>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+
+  @if (loading) {
+    <div class="loading">Loading employees...</div>
+  }
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  @if (!loading && employees.length === 0) {
+    <div class="no-data">
+      No employees found. <a routerLink="/employees/add">Add your first employee</a>
+    </div>
+  }
+
+  @if (!loading && employees.length > 0) {
+    <div class="table-wrapper">
+      <table class="employee-table">
+        <thead>
+          <tr>
+            @if (selectedColumns.has('sno')) {
+              <th>S.No</th>
+            }
+            @if (selectedColumns.has('id')) {
+              <th (click)="sortBy('employeeId')" class="sortable">
+                ID <span class="sort-icon">{{ sortField === 'employeeId' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
+              </th>
+            }
+            @if (selectedColumns.has('name')) {
+              <th (click)="sortBy('employeeName')" class="sortable">
+                Name <span class="sort-icon">{{ sortField === 'employeeName' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
+              </th>
+            }
+            @if (selectedColumns.has('email')) {
+              <th (click)="sortBy('emailId')" class="sortable">
+                Email <span class="sort-icon">{{ sortField === 'emailId' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
+              </th>
+            }
+            @if (selectedColumns.has('contact')) {
+              <th (click)="sortBy('contactNo')" class="sortable">
+                Contact <span class="sort-icon">{{ sortField === 'contactNo' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
+              </th>
+            }
+            @if (selectedColumns.has('gender')) {
+              <th (click)="sortBy('gender')" class="sortable">
+                Gender <span class="sort-icon">{{ sortField === 'gender' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
+              </th>
+            }
+            @if (selectedColumns.has('role')) {
+              <th (click)="sortBy('role')" class="sortable">
+                Role <span class="sort-icon">{{ sortField === 'role' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
+              </th>
+            }
+            @if (selectedColumns.has('status')) {
+              <th>Status</th>
+            }
+            @if (selectedColumns.has('actions')) {
+              <th>Actions</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (emp of employees; track emp.employeeId) {
+            <tr>
+              @if (selectedColumns.has('sno')) {
+                <td>{{ $index + 1 }}</td>
+              }
+              @if (selectedColumns.has('id')) {
+                <td>{{ emp.employeeId }}</td>
+              }
+              @if (selectedColumns.has('name')) {
+                <td>{{ emp.employeeName }}</td>
+              }
+              @if (selectedColumns.has('email')) {
+                <td>{{ emp.emailId }}</td>
+              }
+              @if (selectedColumns.has('contact')) {
+                <td>{{ emp.contactNo }}</td>
+              }
+              @if (selectedColumns.has('gender')) {
+                <td>{{ emp.gender }}</td>
+              }
+              @if (selectedColumns.has('role')) {
+                <td>{{ emp.role }}</td>
+              }
+              @if (selectedColumns.has('status')) {
+                <td>
+                  <span class="badge" [class.active]="emp.isActive" [class.inactive]="!emp.isActive">
+                    {{ emp.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+              }
+              @if (selectedColumns.has('actions')) {
+                <td class="actions">
+                  <a [routerLink]="['/employees/edit', emp.employeeId]" class="btn btn-small btn-edit">Edit</a>
+                  <button (click)="deleteEmployee(emp.employeeId!)" class="btn btn-small btn-delete">Delete</button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
