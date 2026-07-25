@@ -41,86 +41,129 @@
     <div class="table-wrapper">
       <table class="employee-table">
         <thead>
+          @if (groupByColumns.length > 0) {
+            <tr class="group-by-header">
+              <th colspan="100">
+                <span class="drop-zone-text" (dragover)="$event.preventDefault()" (drop)="onTopDrop($event)">Drag a column here to group by that column</span>
+                @for (col of groupByColumns; track $index; let level = $index) {
+                  <span class="group-by-badge">
+                    {{ getGroupLabel(col) }}
+                    <button class="btn-remove-group-level" (click)="removeGroupLevel(level); $event.stopPropagation()" title="Remove grouping">×</button>
+                  </span>
+                  @if ($index < groupByColumns.length - 1) {
+                    <span class="group-by-sep">></span>
+                  }
+                }
+                <button class="btn-clear-group" (click)="clearGroupBy()">Close all</button>
+              </th>
+            </tr>
+          } @else {
+            <tr class="drop-zone-row">
+              <th colspan="100" (dragover)="$event.preventDefault()" (drop)="onTopDrop($event)">
+                <span class="drop-zone-text">Drag a column here to group by that column</span>
+              </th>
+            </tr>
+          }
           <tr>
-            @if (selectedColumns.has('sno')) {
-              <th>S.No</th>
-            }
-            @if (selectedColumns.has('id')) {
-              <th (click)="sortBy('employeeId')" class="sortable">
-                ID <span class="sort-icon">{{ sortField === 'employeeId' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
+            @for (header of getVisibleColumnHeaders(); track header.colKey) {
+              <th (click)="header.col.key !== 'sno' && header.col.key !== 'actions' && header.col.key !== 'status' ? sortBy(header.col.key === 'id' ? 'employeeId' : header.col.key === 'name' ? 'employeeName' : header.col.key === 'email' ? 'emailId' : header.col.key === 'contact' ? 'contactNo' : header.col.key) : null"
+                  class="sortable"
+                  draggable="true"
+                  (dragstart)="onColDragStart(header.colKey, header.groupIndex)"
+                  (dragover)="onColDragOver($event, header.groupIndex, header.colIndex)"
+                  (drop)="onColDrop($event, header.groupIndex, header.colIndex)"
+                  (dragend)="onColDragEnd()">
+                {{ header.col.label }}
+                @if (header.col.key !== 'sno' && header.col.key !== 'actions' && header.col.key !== 'status') {
+                  <span class="sort-icon">
+                    <i class="fas" [class]="getSortIcon(header.col.key === 'id' ? 'employeeId' : header.col.key === 'name' ? 'employeeName' : header.col.key === 'email' ? 'emailId' : header.col.key === 'contact' ? 'contactNo' : header.col.key === 'gender' ? 'gender' : header.col.key === 'role' ? 'role' : header.col.key)"></i>
+                  </span>
+                }
               </th>
-            }
-            @if (selectedColumns.has('name')) {
-              <th (click)="sortBy('employeeName')" class="sortable">
-                Name <span class="sort-icon">{{ sortField === 'employeeName' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
-              </th>
-            }
-            @if (selectedColumns.has('email')) {
-              <th (click)="sortBy('emailId')" class="sortable">
-                Email <span class="sort-icon">{{ sortField === 'emailId' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
-              </th>
-            }
-            @if (selectedColumns.has('contact')) {
-              <th (click)="sortBy('contactNo')" class="sortable">
-                Contact <span class="sort-icon">{{ sortField === 'contactNo' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
-              </th>
-            }
-            @if (selectedColumns.has('gender')) {
-              <th (click)="sortBy('gender')" class="sortable">
-                Gender <span class="sort-icon">{{ sortField === 'gender' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
-              </th>
-            }
-            @if (selectedColumns.has('role')) {
-              <th (click)="sortBy('role')" class="sortable">
-                Role <span class="sort-icon">{{ sortField === 'role' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
-              </th>
-            }
-            @if (selectedColumns.has('status')) {
-              <th>Status</th>
-            }
-            @if (selectedColumns.has('actions')) {
-              <th>Actions</th>
             }
           </tr>
         </thead>
         <tbody>
-          @for (emp of employees; track emp.employeeId) {
-            <tr>
-              @if (selectedColumns.has('sno')) {
-                <td>{{ $index + 1 }}</td>
+          @if (groupByColumns.length > 0) {
+            @for (row of getDisplayRows(); track trackDisplayRow($index, row)) {
+              @if (row.type === 'group') {
+                <tr class="data-group-header" (click)="toggleGroupCollapse(row.level, row.value!)">
+                  <td colspan="100" [style.padding-left.px]="(row.level * 20) + 16">
+                    <span class="data-group-toggle">{{ isGroupCollapsedByKey(row.level, row.value!) ? '▶' : '▼' }}</span>
+                    {{ getGroupLabel(row.column!) }}: {{ row.value }} ({{ row.count }})
+                    <button class="btn-remove-group-level" (click)="removeGroupLevel(row.level); $event.stopPropagation()" title="Close grouping">×</button>
+                  </td>
+                </tr>
+              } @else {
+                <tr>
+                  @for (col of availableColumns; track col.key) {
+                    @if (col.key === 'sno') {
+                      <td [style.padding-left.px]="(row.indent * 20) + 16">{{ row.index }}</td>
+                    } @else if (col.key === 'id') {
+                      <td [style.padding-left.px]="(row.indent * 20) + 16">{{ row.employee!.employeeId }}</td>
+                    } @else if (col.key === 'name') {
+                      <td [style.padding-left.px]="(row.indent * 20) + 16">{{ row.employee!.employeeName }}</td>
+                    } @else if (col.key === 'email') {
+                      <td [style.padding-left.px]="(row.indent * 20) + 16">{{ row.employee!.emailId }}</td>
+                    } @else if (col.key === 'contact') {
+                      <td [style.padding-left.px]="(row.indent * 20) + 16">{{ row.employee!.contactNo }}</td>
+                    } @else if (col.key === 'gender') {
+                      <td [style.padding-left.px]="(row.indent * 20) + 16">{{ row.employee!.gender }}</td>
+                    } @else if (col.key === 'role') {
+                      <td [style.padding-left.px]="(row.indent * 20) + 16">{{ row.employee!.role }}</td>
+                    } @else if (col.key === 'status') {
+                      <td [style.padding-left.px]="(row.indent * 20) + 16">
+                        <span class="badge" [class.active]="row.employee!.isActive" [class.inactive]="!row.employee!.isActive">
+                          {{ row.employee!.isActive ? 'Active' : 'Inactive' }}
+                        </span>
+                      </td>
+                    } @else if (col.key === 'actions') {
+                      <td class="actions" [style.padding-left.px]="(row.indent * 20) + 16">
+                        <a [routerLink]="['/employees/edit', row.employee!.employeeId]" class="btn btn-small btn-edit">Edit</a>
+                        <button (click)="deleteEmployee(row.employee!.employeeId!)" class="btn btn-small btn-delete">Delete</button>
+                      </td>
+                    }
+                  }
+                </tr>
               }
-              @if (selectedColumns.has('id')) {
-                <td>{{ emp.employeeId }}</td>
-              }
-              @if (selectedColumns.has('name')) {
-                <td>{{ emp.employeeName }}</td>
-              }
-              @if (selectedColumns.has('email')) {
-                <td>{{ emp.emailId }}</td>
-              }
-              @if (selectedColumns.has('contact')) {
-                <td>{{ emp.contactNo }}</td>
-              }
-              @if (selectedColumns.has('gender')) {
-                <td>{{ emp.gender }}</td>
-              }
-              @if (selectedColumns.has('role')) {
-                <td>{{ emp.role }}</td>
-              }
-              @if (selectedColumns.has('status')) {
-                <td>
-                  <span class="badge" [class.active]="emp.isActive" [class.inactive]="!emp.isActive">
-                    {{ emp.isActive ? 'Active' : 'Inactive' }}
-                  </span>
-                </td>
-              }
-              @if (selectedColumns.has('actions')) {
-                <td class="actions">
-                  <a [routerLink]="['/employees/edit', emp.employeeId]" class="btn btn-small btn-edit">Edit</a>
-                  <button (click)="deleteEmployee(emp.employeeId!)" class="btn btn-small btn-delete">Delete</button>
-                </td>
-              }
-            </tr>
+            }
+          } @else {
+            @for (emp of employees; track emp.employeeId; let i = $index) {
+              <tr>
+                @for (group of columnGroups; track group.title; let groupIndex = $index) {
+                  @if (!isGroupCollapsed(groupIndex)) {
+                    @for (colKey of group.columns; track colKey) {
+                      @if (colKey === 'sno') {
+                        <td>{{ i + 1 }}</td>
+                      } @else if (colKey === 'id') {
+                        <td>{{ emp.employeeId }}</td>
+                      } @else if (colKey === 'name') {
+                        <td>{{ emp.employeeName }}</td>
+                      } @else if (colKey === 'email') {
+                        <td>{{ emp.emailId }}</td>
+                      } @else if (colKey === 'contact') {
+                        <td>{{ emp.contactNo }}</td>
+                      } @else if (colKey === 'gender') {
+                        <td>{{ emp.gender }}</td>
+                      } @else if (colKey === 'role') {
+                        <td>{{ emp.role }}</td>
+                      } @else if (colKey === 'status') {
+                        <td>
+                          <span class="badge" [class.active]="emp.isActive" [class.inactive]="!emp.isActive">
+                            {{ emp.isActive ? 'Active' : 'Inactive' }}
+                          </span>
+                        </td>
+                      } @else if (colKey === 'actions') {
+                        <td class="actions">
+                          <a [routerLink]="['/employees/edit', emp.employeeId]" class="btn btn-small btn-edit">Edit</a>
+                          <button (click)="deleteEmployee(emp.employeeId!)" class="btn btn-small btn-delete">Delete</button>
+                        </td>
+                      }
+                    }
+                  }
+                }
+              </tr>
+            }
           }
         </tbody>
       </table>

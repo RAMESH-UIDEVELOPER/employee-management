@@ -1,4 +1,19 @@
-require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
+
+const envFile = process.env.NODE_ENV === 'production' ? '.env.prod'
+              : process.env.NODE_ENV === 'uat' ? '.env.uat'
+              : process.env.NODE_ENV === 'qa' ? '.env.qa'
+              : '.env.development';
+
+const envPath = path.join(__dirname, envFile);
+
+if (fs.existsSync(envPath)) {
+  require('dotenv').config({ path: envPath });
+} else {
+  require('dotenv').config();
+}
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -7,7 +22,7 @@ const employeeRoutes = require('./routes/employeeRoutes');
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:4200',
+  origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
